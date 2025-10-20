@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import Usuario from './Usuario';
-
+//pruba 
 function App() {
   const [usuarios, setUsuarios] = useState([]); // Estado original de la API
   const [cargando, setCargando] = useState(true); // Para mostrar mensaje de carga

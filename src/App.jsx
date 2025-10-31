@@ -1,89 +1,123 @@
 import { useEffect, useState } from 'react';
 import Usuario from './Usuario';
-//pruba 
-function App() {
-  const [usuarios, setUsuarios] = useState([]); // Estado original de la API
-  const [cargando, setCargando] = useState(true); // Para mostrar mensaje de carga
-  const [error, setError] = useState(null); // Para mostrar errores
-  const [busqueda, setBusqueda] = useState(''); // Estado para filtrar usuarios por nombre
-  const [ordenAsc, setOrdenAsc] = useState(true); //estado  true = ASC, false = DESC
+import { Button, TextField, Typography, Box, CircularProgress } from '@mui/material';
 
-  // useEffect: se ejecuta solo una vez al cargar el componente
+function App() {
+  const [usuarios, setUsuarios] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
+  const [busqueda, setBusqueda] = useState('');
+  const [ordenAsc, setOrdenAsc] = useState(true);
+
   useEffect(() => {
     fetch('https://jsonplaceholder.typicode.com/users')
       .then((res) => {
-        if (!res.ok) throw new Error('Error al obtener datos');
+        if (!res.ok) throw new Error('Error al obtener datos de la API');
         return res.json();
       })
       .then((data) => {
-        setUsuarios(data); // Guardamos los usuarios
-        setCargando(false); // Ya no está cargando
+        setUsuarios(data);
+        setCargando(false);
       })
       .catch((err) => {
-        setError(err.message); // Si hay error, lo guardamos
-        setCargando(false); // También detenemos el "loading"
+        setError(err.message);
+        setCargando(false);
       });
   }, []);
 
-  // Si todavía está cargando, mostramos mensaje
-  if (cargando) return <p>Cargando usuarios...</p>;
+  if (cargando)
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '50px' }}>
+        <CircularProgress />
+      </Box>
+    );
 
-  // Si hubo un error al obtener los datos
-  if (error) return <p>Error: {error}</p>;
+  if (error) return <Typography color="error">Error: {error}</Typography>;
 
-  //  Filtramos por nombre usando el input de búsqueda
   const usuariosFiltrados = usuarios.filter((user) =>
     user.name.toLowerCase().includes(busqueda.toLowerCase())
   );
 
-  //  Ordenamos alfabéticamente (según el estado `ordenAsc`)
-  const usuariosOrdenados = [...usuariosFiltrados].sort((a, b) => {
-    return ordenAsc
-      ? a.name.localeCompare(b.name)
-      : b.name.localeCompare(a.name);
-  });
+  const usuariosOrdenados = [...usuariosFiltrados].sort((a, b) =>
+    ordenAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
+  );
 
   return (
-    <div>
-      <h1>Usuarios desde API</h1>
 
-      {/* Input controlado para buscar por nombre */}
-      <input
-        type="text"
-        placeholder="Buscar por nombre..."
+    <Box
+  sx={{
+    width: "100vw",          // 🔹 Ocupa todo el ancho de la ventana
+    minHeight: "100vh",      // 🔹 Ocupa toda la altura visible
+    padding: "30px",
+    textAlign: "center",
+    backgroundColor: "#e9eef3", // 🔹 Color coherente con el body
+    color: "#222",
+    boxSizing: "border-box", // 🔹 Evita desbordes por padding
+  }}
+>
+
+      {/* Título visible */}
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontWeight: 'bold',
+          color: '#1a1a1a', // 🔹 Asegura buena visibilidad
+        }}
+      >
+        <span role="img" aria-label="clipboard" style={{ marginRight: '8px' }}>
+          📋
+        </span>
+        Usuarios desde API Pública
+      </Typography>
+
+      {/* Campo de búsqueda */}
+      <TextField
+        label="Buscar por nombre..."
+        variant="outlined"
         value={busqueda}
         onChange={(e) => setBusqueda(e.target.value)}
-        style={{
-          padding: '8px',
-          marginBottom: '10px',
-          width: '300px',
-          fontSize: '16px',
-          color: '#000',
-          backgroundColor: '#fff'
+        sx={{
+          marginBottom: 2,
+          width: 300,
+          backgroundColor: '#fff', // 🔹 Fondo blanco visible
+          borderRadius: 1,
         }}
       />
 
-      {/* Botón para cambiar entre orden ascendente/descendente */}
-      <div style={{ marginBottom: '20px' }}>
-        <button
+      {/* Botón de orden */}
+      <Box sx={{ marginBottom: 3 }}>
+        <Button
+          variant="contained"
+          color="primary"
           onClick={() => setOrdenAsc(!ordenAsc)}
-          style={{ padding: '8px 12px', cursor: 'pointer' }}
+          sx={{ fontWeight: 'bold' }}
         >
-          Ordenar por nombre ({ordenAsc ? 'ASC' : 'DESC'})
-        </button>
-      </div>
+          ORDENAR POR NOMBRE ({ordenAsc ? 'ASC' : 'DESC'})
+        </Button>
+      </Box>
 
-      {/*  Mostrar lista ordenada y filtrada */}
+      {/* Lista de usuarios */}
       {usuariosOrdenados.length === 0 ? (
-        <p>No se encontraron usuarios.</p>
+        <Typography>No se encontraron usuarios.</Typography>
       ) : (
-        <ul>
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            gap: 2,
+          }}
+        >
           {usuariosOrdenados.map((user) => (
             <Usuario key={user.id} user={user} />
           ))}
-        </ul>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }
 

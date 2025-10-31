@@ -1,3 +1,13 @@
+/* Asegura que el body y html ocupen todo el espacio y sin márgenes */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #e9eef3; /* Igual que el fondo de App */
+  overflow-x: hidden; /* Evita scroll lateral */
+}
+
 #root {
   max-width: 1280px;
   margin: 0 auto;

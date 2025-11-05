@@ -1,52 +1,67 @@
-/* Asegura que el body y html ocupen todo el espacio y sin márgenes */
-html, body, #root {
+/* ✅ Reset y estilo base */
+html,
+body,
+#root {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
-  background-color: #e9eef3; /* Igual que el fondo de App */
-  overflow-x: hidden; /* Evita scroll lateral */
+  background-color: #e9eef3;
+  color: #222;
+  font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
+/* ✅ Suaviza tipografía y transiciones */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ✅ Contenedor principal centrado */
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+/* ✅ Tarjetas de usuario (si usas <Usuario /> con MUI Card) */
+.user-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.user-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
 }
 
-@keyframes logo-spin {
+/* ✅ Animaciones suaves para la carga */
+.fade-in {
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
   from {
-    transform: rotate(0deg);
+    opacity: 0;
+    transform: translateY(10px);
   }
   to {
-    transform: rotate(360deg);
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+/* ✅ Responsive */
+@media (max-width: 600px) {
+  #root {
+    padding: 1rem;
   }
-}
 
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+  .user-card {
+    width: 100% !important;
+  }
 }

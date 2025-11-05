@@ -1,6 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Usuario from './Usuario';
-import { Button, TextField, Typography, Box, CircularProgress } from '@mui/material';
+import {
+  Button,
+  TextField,
+  Typography,
+  Box,
+  CircularProgress,
+  Alert,
+  Fade,
+} from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import SortByAlphaIcon from '@mui/icons-material/SortByAlpha';
 
 function App() {
   const [usuarios, setUsuarios] = useState([]);
@@ -9,21 +19,35 @@ function App() {
   const [busqueda, setBusqueda] = useState('');
   const [ordenAsc, setOrdenAsc] = useState(true);
 
+  // ✅ Función reutilizable para cargar datos (permite recargar)
+  const cargarUsuarios = async () => {
+    try {
+      setCargando(true);
+      setError(null);
+      const res = await fetch('https://jsonplaceholder.typicode.com/users');
+      if (!res.ok) throw new Error('Error al obtener datos de la API');
+      const data = await res.json();
+      setUsuarios(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setCargando(false);
+    }
+  };
+
   useEffect(() => {
-    fetch('https://jsonplaceholder.typicode.com/users')
-      .then((res) => {
-        if (!res.ok) throw new Error('Error al obtener datos de la API');
-        return res.json();
-      })
-      .then((data) => {
-        setUsuarios(data);
-        setCargando(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setCargando(false);
-      });
+    cargarUsuarios();
   }, []);
+
+  // ✅ Memoización: evita recalcular si no cambian dependencias
+  const usuariosProcesados = useMemo(() => {
+    const filtrados = usuarios.filter((user) =>
+      user.name.toLowerCase().includes(busqueda.toLowerCase())
+    );
+    return filtrados.sort((a, b) =>
+      ordenAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
+    );
+  }, [usuarios, busqueda, ordenAsc]);
 
   if (cargando)
     return (
@@ -32,31 +56,19 @@ function App() {
       </Box>
     );
 
-  if (error) return <Typography color="error">Error: {error}</Typography>;
-
-  const usuariosFiltrados = usuarios.filter((user) =>
-    user.name.toLowerCase().includes(busqueda.toLowerCase())
-  );
-
-  const usuariosOrdenados = [...usuariosFiltrados].sort((a, b) =>
-    ordenAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
-  );
-
   return (
-
     <Box
-  sx={{
-    width: "100vw",          // 🔹 Ocupa todo el ancho de la ventana
-    minHeight: "100vh",      // 🔹 Ocupa toda la altura visible
-    padding: "30px",
-    textAlign: "center",
-    backgroundColor: "#e9eef3", // 🔹 Color coherente con el body
-    color: "#222",
-    boxSizing: "border-box", // 🔹 Evita desbordes por padding
-  }}
->
-
-      {/* Título visible */}
+      sx={{
+        width: '100vw',
+        minHeight: '100vh',
+        padding: '30px',
+        textAlign: 'center',
+        backgroundColor: '#e9eef3',
+        color: '#222',
+        boxSizing: 'border-box',
+      }}
+    >
+      {/* Título */}
       <Typography
         variant="h4"
         gutterBottom
@@ -65,14 +77,18 @@ function App() {
           alignItems: 'center',
           justifyContent: 'center',
           fontWeight: 'bold',
-          color: '#1a1a1a', // 🔹 Asegura buena visibilidad
+          color: '#1a1a1a',
         }}
       >
-        <span role="img" aria-label="clipboard" style={{ marginRight: '8px' }}>
-          📋
-        </span>
-        Usuarios desde API Pública
+        📋 Usuarios desde API Pública
       </Typography>
+
+      {/* Mostrar error si existe */}
+      {error && (
+        <Alert severity="error" sx={{ maxWidth: 400, margin: '10px auto' }}>
+          {error}
+        </Alert>
+      )}
 
       {/* Campo de búsqueda */}
       <TextField
@@ -83,39 +99,51 @@ function App() {
         sx={{
           marginBottom: 2,
           width: 300,
-          backgroundColor: '#fff', // 🔹 Fondo blanco visible
+          backgroundColor: '#fff',
           borderRadius: 1,
         }}
       />
 
-      {/* Botón de orden */}
-      <Box sx={{ marginBottom: 3 }}>
+      {/* Controles de orden y recarga */}
+      <Box sx={{ marginBottom: 3, display: 'flex', gap: 2, justifyContent: 'center' }}>
         <Button
           variant="contained"
           color="primary"
+          startIcon={<SortByAlphaIcon />}
           onClick={() => setOrdenAsc(!ordenAsc)}
           sx={{ fontWeight: 'bold' }}
         >
-          ORDENAR POR NOMBRE ({ordenAsc ? 'ASC' : 'DESC'})
+          {ordenAsc ? 'ASC' : 'DESC'}
+        </Button>
+
+        <Button
+          variant="outlined"
+          color="secondary"
+          startIcon={<RefreshIcon />}
+          onClick={cargarUsuarios}
+        >
+          Recargar
         </Button>
       </Box>
 
       {/* Lista de usuarios */}
-      {usuariosOrdenados.length === 0 ? (
+      {usuariosProcesados.length === 0 ? (
         <Typography>No se encontraron usuarios.</Typography>
       ) : (
-        <Box
-          sx={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            gap: 2,
-          }}
-        >
-          {usuariosOrdenados.map((user) => (
-            <Usuario key={user.id} user={user} />
-          ))}
-        </Box>
+        <Fade in={true}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              gap: 2,
+            }}
+          >
+            {usuariosProcesados.map((user) => (
+              <Usuario key={user.id} user={user} />
+            ))}
+          </Box>
+        </Fade>
       )}
     </Box>
   );
